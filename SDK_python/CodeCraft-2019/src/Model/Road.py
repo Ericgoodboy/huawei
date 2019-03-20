@@ -1,5 +1,6 @@
 class Road():
     NOCAR="none"
+    TYPE="Road"
     def __init__(self,id,length,speed,channel,fromCrossId,toCrossId,isDuplex,pool):
         self.id=id
         self.length=length

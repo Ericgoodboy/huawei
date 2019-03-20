@@ -1,5 +1,6 @@
 
 class Cross(object):
+    TYPE="Cross"
     def __init__(self,id,nRoadId,eRoadId,sRoadId,wRoadId):
         self.id=id
         self.nRoadId=nRoadId
@@ -11,6 +12,7 @@ class Cross(object):
         self.wRoad=0
         self.sRoad=0
         self.flag=0
+        self.pos=()
     def link(self,road):
         if road.id == self.nRoadId:
             self.nRoad=road

@@ -25,22 +25,25 @@ def loadRoadPool(roadPath,crossPool):
         roadPool.append(road)
     return roadPool
 
-def loadCar(carPath):
+def loadCar(carPath,crossPool):
+    datas = loadData.loadData(carPath)
+    carPool = []
+    print(datas)
+    for d in datas:
+        road = Car.Car(d[0], d[1], d[2], d[3], d[4],crossPool)
+        carPool.append(road)
+    return carPool
 
-    pass
-
-crossPool,roadPool = loadMap("../1-map-training-1/cross.txt","../1-map-training-1/road.txt")
-print(crossPool[0].nRoad)
-for i in range(32):
-    print("\n:crossPool[{0}]".format(i)+str(crossPool[i]))
-    print(roadPool[i])
 
 
+
+now_pos=[0,0]
 import turtle
 def draw(cross):
-
+    print(turtle.position())
     if cross.flag==1:
         return
+    #print(turtle.getposition())
     turtle.pencolor("black")
     turtle.write(str(cross.id)+"")
     if cross.eRoadId != -1:
@@ -95,15 +98,68 @@ def draw(cross):
         turtle.backward(50)
         turtle.pendown()
     cross.flag=1
+def draw2(cross):
+    if cross.flag==1:
+        return
+    cross.pos=(now_pos[0],now_pos[1])
+
+    if cross.eRoadId != -1:
+        now_pos[0]+=50
+        if cross.eRoad.fromCrossId==cross.id:
+            draw2(cross.eRoad.toCross)
+        else:draw2(cross.eRoad.fromCross)
+        now_pos[0]-=50
+    if cross.nRoadId != -1:
+        now_pos[1]+=50
+        if cross.nRoad.fromCrossId==cross.id:
+            draw2(cross.nRoad.toCross)
+        else:draw2(cross.nRoad.fromCross)
+        now_pos[1]-=50
+    cross.flag=1
+
+
+def goto(position):
+    pass
+
+def crossP():
+    pass
+crossPool,roadPool = loadMap("../1-map-training-1/cross.txt","../1-map-training-1/road.txt")
+
+
+print(crossPool[0].nRoad)
+import math,random
+draw2(crossPool[0])
+car =loadCar("../1-map-training-1/car.txt",crossPool)
+car.sort(key=lambda c:c.plantTime,reverse=False)
+for c in car:
+    print(c)
 turtle.penup()
 turtle.goto(-200,-200)
 turtle.pendown()
 turtle.left(90)
 turtle.speed(0)
 
+
+for c in crossPool:
+    c.flag=0
 draw(crossPool[0])
-import time
-time.sleep(1000)
+count=0
+for c in car:
+    if c.plantTime==1:
+        if c.fromCrossId==crossPool[2].id:
+            count+=1
+        # turtle.penup()
+        # turtle.goto(c.pos[0]-200,c.pos[1]-200)
+        # turtle.pendown()
+        # turtle.goto(c.toCross.pos[0]-200,c.toCross.pos[1]-200)
+        # turtle.penup()
+print(count)
+turtle.mainloop()
+
+
+
+
+
 
 
 

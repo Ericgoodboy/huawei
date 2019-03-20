@@ -3,6 +3,7 @@ def loadData(path):
     data=[]
     with open(path,"r") as f:
         case=f.readline()
+
         case=f.readline()
         i=1
         while case:
