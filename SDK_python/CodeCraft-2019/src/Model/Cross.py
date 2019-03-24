@@ -7,10 +7,7 @@ class Cross(object):
         self.eRoadId=eRoadId
         self.wRoadId=wRoadId
         self.sRoadId=sRoadId
-        self.nRoad=0
-        self.eRoad=0
-        self.wRoad=0
-        self.sRoad=0
+        self.allRoad =[nRoadId,eRoadId,sRoadId,wRoadId]
         self.flag=0
         self.pos=()
 

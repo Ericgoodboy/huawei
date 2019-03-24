@@ -1,6 +1,6 @@
 from huaweiUtil import loadData
 from Model import Car,Cross,Road
-
+import numpy as np
 def loadMap(crossPath,roadPath):
     crossPool=loadCrossPool(crossPath)
     roadPool=loadRoadPool(roadPath)
@@ -171,12 +171,49 @@ for c in car:
 #         turtle.penup()
 # print(count)
 # turtle.mainloop()
+def graph(crossPool,roadPool):
+    length=len(crossPool)
+    max=-1
+    tgraph=np.zeros((length,length))
+    map=[]
+    for i in range(length):
+        for j in range(length):
+            if crossPool[i].nRoadId != -1:
+                pass
+    pass
 
 
+# 生成地图
+def get_map(crosses, roads):
+    length = len(crosses)
+    graph_list=np.zeros((length,length),dtype="int32")
+    graph_list[:]=9999
+    map=[]
+    for cross in crosses:
+        map.append(cross)
+    for i in range(len(crosses)):
+        for j in range(len(crosses)):
+            if i == j:
+                graph_list[i][j] = 0
+            else:
+                for k in crosses[map[i]].allRoad:
+                    if k is not -1:
+                        road=roads[k]
+                        previousCross = road.fromCrossId
+                        nextCross = road.toCrossId
+                        if road.isDuplex == 1:
+                            if sorted([previousCross,nextCross]) == sorted([crosses[map[i]].id,crosses[map[j]].id]):
+                                graph_list[i][j] = road.length
+                        elif previousCross == crosses[map[i]].id and nextCross == crosses[map[j]].id:
+                             graph_list[i][j] = road.length
+                        else:
+                            pass
+    return graph_list
 
 
+from huaweiUtil import alg
+mapp = get_map(crossPool, roadPool)
 
-
-
-
+distance, path = alg.dijkstra(mapp, 0)
+print(path)
 

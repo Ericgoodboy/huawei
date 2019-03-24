@@ -8,7 +8,7 @@ class Road():
         self.speed=speed
         self.fromCrossId=fromCrossId
         self.channel=channel
-        self.toCrossID=toCrossId
+        self.toCrossId=toCrossId
         self.isDuplex=isDuplex
         self.places=numpy.zeros((channel,length),dtype="int32")
 
