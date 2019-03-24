@@ -7,7 +7,6 @@ class Car(object):
         self.plantTime=planTime
         self.answer=[]
 
-        self.pos=self.fromCross.pos
         self.isReadyToGo=False
         self.isEnded=False
     def nextToGo(self):

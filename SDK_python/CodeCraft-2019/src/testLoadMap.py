@@ -3,9 +3,9 @@ from Model import Car,Cross,Road
 
 def loadMap(crossPath,roadPath):
     crossPool=loadCrossPool(crossPath)
-    roadPool=loadRoadPool(roadPath,crossPool)
+    roadPool=loadRoadPool(roadPath)
     return (crossPool,roadPool)
-k={}
+
 def loadCrossPool(crossPath):
     global k
     datas=loadData.loadData(crossPath)
@@ -17,24 +17,26 @@ def loadCrossPool(crossPath):
         #(self,id,nRoadId,eRoadId,sRoadId,wRoadId)
     crossdict={cross.id:cross for cross in crossPool}
     k=crossdict
-    return crossPool
-def loadRoadPool(roadPath,crossPool):
+    return crossdict
+def loadRoadPool(roadPath):
     datas=loadData.loadData(roadPath)
     roadPool=[]
     print(datas)
     for d in datas:
-        road=Road.Road(d[0],d[1],d[2],d[3],d[4],d[5],d[6],crossPool)
+        road=Road.Road(d[0],d[1],d[2],d[3],d[4],d[5],d[6])
         roadPool.append(road)
-    return roadPool
+    roadDic={road.id:road for road in roadPool}
+    return roadDic
 
-def loadCar(carPath,crossPool):
+def loadCar(carPath):
     datas = loadData.loadData(carPath)
     carPool = []
     print(datas)
     for d in datas:
-        road = Car.Car(d[0], d[1], d[2], d[3], d[4],crossPool)
+        road = Car.Car(d[0], d[1], d[2], d[3], d[4])
         carPool.append(road)
-    return carPool
+    carDic={car.id : car for car in carPool}
+    return carDic
 
 
 
@@ -100,7 +102,7 @@ def draw(cross):
         turtle.backward(50)
         turtle.pendown()
     cross.flag=1
-def draw2(cross):
+def draw2(cross,crossPool,roadPool):
     if cross.flag==1:
         return
     cross.pos=(now_pos[0],now_pos[1])
@@ -127,11 +129,11 @@ def crossP():
 crossPool,roadPool = loadMap("../1-map-training-1/cross.txt","../1-map-training-1/road.txt")
 
 
-print(crossPool[0].nRoad)
+
 import math,random
 # draw2(crossPool[0])
-car =loadCar("../1-map-training-1/car.txt",crossPool)
-car.sort(key=lambda c:c.plantTime,reverse=False)
+car =loadCar("../1-map-training-1/car.txt")
+#car.sort(key=lambda c:c.plantTime,reverse=False)
 for c in car:
     print(c)
 # turtle.penup()
@@ -141,8 +143,8 @@ for c in car:
 # turtle.speed(0)
 
 
-for c in crossPool:
-    c.flag=0
+# for c in crossPool:
+# #     c.flag=0
 # draw(crossPool[0])
 # count = 0
 # turtle.pencolor("red")
