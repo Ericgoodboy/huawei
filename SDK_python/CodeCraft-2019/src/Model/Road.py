@@ -1,3 +1,4 @@
+import numpy
 class Road():
     NOCAR="none"
     TYPE="Road"
@@ -9,7 +10,7 @@ class Road():
         self.channel=channel
         self.toCrossID=toCrossId
         self.isDuplex=isDuplex
-        self.places=[Road.NOCAR for i in range(length)]
+        self.places=numpy.zeros((channel,length),dtype="int32")
         self.__link(pool)
     def __link(self,pool):
         start=pool[0].id

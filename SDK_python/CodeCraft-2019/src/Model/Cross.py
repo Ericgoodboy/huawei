@@ -13,6 +13,7 @@ class Cross(object):
         self.sRoad=0
         self.flag=0
         self.pos=()
+
     def link(self,road):
         if road.id == self.nRoadId:
             self.nRoad=road

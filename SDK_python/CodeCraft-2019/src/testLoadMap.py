@@ -5,8 +5,9 @@ def loadMap(crossPath,roadPath):
     crossPool=loadCrossPool(crossPath)
     roadPool=loadRoadPool(roadPath,crossPool)
     return (crossPool,roadPool)
-
+k={}
 def loadCrossPool(crossPath):
+    global k
     datas=loadData.loadData(crossPath)
     crossPool=[]
 
@@ -14,8 +15,9 @@ def loadCrossPool(crossPath):
         cross=Cross.Cross(data[0],data[1],data[2],data[3],data[4])
         crossPool.append(cross)
         #(self,id,nRoadId,eRoadId,sRoadId,wRoadId)
+    crossdict={cross.id:cross for cross in crossPool}
+    k=crossdict
     return crossPool
-
 def loadRoadPool(roadPath,crossPool):
     datas=loadData.loadData(roadPath)
     roadPool=[]
@@ -102,7 +104,6 @@ def draw2(cross):
     if cross.flag==1:
         return
     cross.pos=(now_pos[0],now_pos[1])
-
     if cross.eRoadId != -1:
         now_pos[0]+=50
         if cross.eRoad.fromCrossId==cross.id:
@@ -128,33 +129,46 @@ crossPool,roadPool = loadMap("../1-map-training-1/cross.txt","../1-map-training-
 
 print(crossPool[0].nRoad)
 import math,random
-draw2(crossPool[0])
+# draw2(crossPool[0])
 car =loadCar("../1-map-training-1/car.txt",crossPool)
 car.sort(key=lambda c:c.plantTime,reverse=False)
 for c in car:
     print(c)
-turtle.penup()
-turtle.goto(-200,-200)
-turtle.pendown()
-turtle.left(90)
-turtle.speed(0)
+# turtle.penup()
+# turtle.goto(-200,-200)
+# turtle.pendown()
+# turtle.left(90)
+# turtle.speed(0)
 
 
 for c in crossPool:
     c.flag=0
-draw(crossPool[0])
-count=0
-for c in car:
-    if c.plantTime==1:
-        if c.fromCrossId==crossPool[2].id:
-            count+=1
-        # turtle.penup()
-        # turtle.goto(c.pos[0]-200,c.pos[1]-200)
-        # turtle.pendown()
-        # turtle.goto(c.toCross.pos[0]-200,c.toCross.pos[1]-200)
-        # turtle.penup()
-print(count)
-turtle.mainloop()
+# draw(crossPool[0])
+# count = 0
+# turtle.pencolor("red")
+# car[0].fromCross = crossPool[0]
+# car[0].toCross = crossPool[63]
+# data = car[0].getRoadline(crossPool, 3)
+# print(data)
+# turtle.penup()
+# turtle.goto(-200, -200)
+# turtle.pendown()
+
+# turtle.pensize(3)
+# for d in data:
+#     turtle.goto(d[0]*50-200, d[1]*50-200)
+#
+# for c in car:
+#     if c.plantTime==1:
+#         if c.fromCrossId==crossPool[2].id:
+#             count+=1
+#         turtle.penup()
+#         turtle.goto(c.pos[0]-200,c.pos[1]-200)
+#         turtle.pendown()
+#         turtle.goto(c.toCross.pos[0]-200,c.toCross.pos[1]-200)
+#         turtle.penup()
+# print(count)
+# turtle.mainloop()
 
 
 
