@@ -1,4 +1,5 @@
 
+
 class Cross(object):
     TYPE="Cross"
     def __init__(self,id,nRoadId,eRoadId,sRoadId,wRoadId):
@@ -7,7 +8,7 @@ class Cross(object):
         self.eRoadId=eRoadId
         self.wRoadId=wRoadId
         self.sRoadId=sRoadId
-        self.allRoad =[nRoadId,eRoadId,sRoadId,wRoadId]
+        self.allRoad =[nRoadId,eRoadId,sRoadId,wRoadId]#n=0,e=1,s=
         self.flag=0
         self.pos=()
 

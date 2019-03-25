@@ -11,6 +11,9 @@ class Car(object):
         self.isEnded=False
     def nextToGo(self):
         pass
+    def addAnswer(self,path):
+        self.path=path
+        pass
     def getRoadline(self,crossPool,num):
         import math
         govic=[]

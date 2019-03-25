@@ -43,7 +43,7 @@ def loadCar(carPath):
 
 now_pos=[0,0]
 import turtle
-def draw(cross):
+def draw(cross,roadPool):
     print(turtle.position())
     if cross.flag==1:
         return
@@ -210,10 +210,35 @@ def get_map(crosses, roads):
                             pass
     return graph_list
 
+def decodeRoad(pathes,crossPool,roadPool):
+
+    for start in pathes:
+        for end in path:
+            road=path[start][end]
+            n=start
+
+            while road !=[]:
+                pass
+
+
+
+
+
 
 from huaweiUtil import alg
 mapp = get_map(crossPool, roadPool)
+map_cross=[]
+for cross in crossPool:
+        map_cross.append(cross)
 
-distance, path = alg.dijkstra(mapp, 0)
+path={}
+import time
+a=time.time()
+
+for c in range(len(crossPool)):
+    path.update({map_cross[c]:alg.dijkstra(mapp, c,crossPool,roadPool)})
+print(time.time()-a)
+
+
 print(path)
 

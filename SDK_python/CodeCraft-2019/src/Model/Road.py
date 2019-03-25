@@ -10,21 +10,23 @@ class Road():
         self.channel=channel
         self.toCrossId=toCrossId
         self.isDuplex=isDuplex
-        self.places=numpy.zeros((channel,length),dtype="int32")
+        if isDuplex:
+            self.placesA=numpy.zeros((channel,length),dtype="int32")#from - to
+            self.placesB=numpy.zeros((channel,length),dtype="int32")#to - from
+        else:
+            self.placesA=numpy.zeros((channel,length),dtype="int32")#from - tos
+    def maxToGo(self,v,start):#获取最大的可走的距离
+        temp=None
+        if start=="from":
+            temp=self.placesA
+        else:
+            temp=self.placesB
 
+        for i in range(self.channel):
+            if self.placesA[i][0] !=0:
+                continue
+            else:
 
-
-    def __inComeCar(self):
-        pass
-    def __testClear(self,start,end):#参数是起末位置
-        temp=start
-        if end >= self.__length:
-            return False
-        while(temp<=end):
-            if(self.__places[temp] is not NOCAR):
-                return False
-        return True
-    def comeInCar(self,car):
-        pass
+                pass
     def __str__(self):
-        return str(self.fromCrossId)+">"+str(self.toCrossID)
+        return str(self.fromCrossId)+">"+str(self.toCrossId)
