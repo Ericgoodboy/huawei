@@ -1,6 +1,10 @@
 from huaweiUtil import loadData
 from Model import Car,Cross,Road
 import numpy as np
+
+
+
+
 def loadMap(crossPath,roadPath):
     crossPool=loadCrossPool(crossPath)
     roadPool=loadRoadPool(roadPath)
@@ -39,138 +43,6 @@ def loadCar(carPath):
     return carDic
 
 
-
-
-now_pos=[0,0]
-import turtle
-def draw(cross,roadPool):
-    print(turtle.position())
-    if cross.flag==1:
-        return
-    #print(turtle.getposition())
-    turtle.pencolor("black")
-    turtle.write(str(cross.id)+"")
-    if cross.eRoadId != -1:
-        if cross.eRoad.isDuplex:
-            turtle.pencolor("green")
-        else: turtle.pencolor("red")
-        turtle.right(90)
-        turtle.fd(20)
-        turtle.right(90)
-        turtle.penup()
-        turtle.fd(7)
-        turtle.left(90)
-        turtle.pendown()
-        if cross.eRoad.isDuplex:
-            turtle.write("><")
-        else:
-            if cross.eRoad.fromCrossId== cross.id:
-                turtle.write(">")
-            else:turtle.write("<")
-        turtle.penup()
-        turtle.left(90)
-        turtle.fd(7)
-        turtle.right(90)
-        turtle.pendown()
-        turtle.fd(30)
-        turtle.left(90)
-        if cross.eRoad.fromCrossId==cross.id:
-            turtle.dot()
-            draw(cross.eRoad.toCross)
-        else:
-            turtle.dot()
-            draw(cross.eRoad.fromCross)
-        turtle.penup()
-        turtle.left(90)
-        turtle.fd(50)
-        turtle.right(90)
-        turtle.pendown()
-    if cross.nRoadId != -1:
-        if cross.nRoad.isDuplex:
-            turtle.pencolor("green")
-        else: turtle.pencolor("red")
-        turtle.fd(25)
-        turtle.write(str(cross.nRoad))
-        turtle.fd(25)
-        if cross.nRoad.fromCrossId==cross.id:
-            turtle.dot()
-            draw(cross.nRoad.toCross)
-        else:
-            turtle.dot()
-            draw(cross.nRoad.fromCross)
-        turtle.penup()
-        turtle.backward(50)
-        turtle.pendown()
-    cross.flag=1
-def draw2(cross,crossPool,roadPool):
-    if cross.flag==1:
-        return
-    cross.pos=(now_pos[0],now_pos[1])
-    if cross.eRoadId != -1:
-        now_pos[0]+=50
-        if cross.eRoad.fromCrossId==cross.id:
-            draw2(cross.eRoad.toCross)
-        else:draw2(cross.eRoad.fromCross)
-        now_pos[0]-=50
-    if cross.nRoadId != -1:
-        now_pos[1]+=50
-        if cross.nRoad.fromCrossId==cross.id:
-            draw2(cross.nRoad.toCross)
-        else:draw2(cross.nRoad.fromCross)
-        now_pos[1]-=50
-    cross.flag=1
-
-
-def goto(position):
-    pass
-
-def crossP():
-    pass
-crossPool,roadPool = loadMap("../1-map-training-1/cross.txt","../1-map-training-1/road.txt")
-
-
-
-import math,random
-# draw2(crossPool[0])
-car =loadCar("../1-map-training-1/car.txt")
-#car.sort(key=lambda c:c.plantTime,reverse=False)
-for c in car:
-    print(c)
-# turtle.penup()
-# turtle.goto(-200,-200)
-# turtle.pendown()
-# turtle.left(90)
-# turtle.speed(0)
-
-
-# for c in crossPool:
-# #     c.flag=0
-# draw(crossPool[0])
-# count = 0
-# turtle.pencolor("red")
-# car[0].fromCross = crossPool[0]
-# car[0].toCross = crossPool[63]
-# data = car[0].getRoadline(crossPool, 3)
-# print(data)
-# turtle.penup()
-# turtle.goto(-200, -200)
-# turtle.pendown()
-
-# turtle.pensize(3)
-# for d in data:
-#     turtle.goto(d[0]*50-200, d[1]*50-200)
-#
-# for c in car:
-#     if c.plantTime==1:
-#         if c.fromCrossId==crossPool[2].id:
-#             count+=1
-#         turtle.penup()
-#         turtle.goto(c.pos[0]-200,c.pos[1]-200)
-#         turtle.pendown()
-#         turtle.goto(c.toCross.pos[0]-200,c.toCross.pos[1]-200)
-#         turtle.penup()
-# print(count)
-# turtle.mainloop()
 def graph(crossPool,roadPool):
     length=len(crossPool)
     max=-1
@@ -210,18 +82,46 @@ def get_map(crosses, roads):
                             pass
     return graph_list
 
-def decodeRoad(pathes,crossPool,roadPool):
-
-    for start in pathes:
-        for end in path:
-            road=path[start][end]
-            n=start
-
-            while road !=[]:
-                pass
 
 
 
+def draw2(cross,crossPool,roadPool):
+    if cross.flag==1:
+        return
+    cross.pos=(now_pos[0],now_pos[1])
+    if cross.eRoadId != -1:
+        now_pos[0]+=50
+        if cross.eRoad.fromCrossId==cross.id:
+            draw2(cross.eRoad.toCross)
+        else:draw2(cross.eRoad.fromCross)
+        now_pos[0]-=50
+    if cross.nRoadId != -1:
+        now_pos[1]+=50
+        if cross.nRoad.fromCrossId==cross.id:
+            draw2(cross.nRoad.toCross)
+        else:draw2(cross.nRoad.fromCross)
+        now_pos[1]-=50
+    cross.flag=1
+
+
+
+def dumpAnswer(path,cars):
+    with open(path,"w") as f:
+        for car in cars:
+            tempStr=str(cars[car].id)+" ,"+str(cars[car].bestStartTime)+" ,"+" ,".join([str(i) for i in cars[car].path])
+            tempStr="("+tempStr+")\r"
+            f.writelines(tempStr)
+
+
+
+
+crossPool,roadPool = loadMap("../1-map-training-1/cross.txt","../1-map-training-1/road.txt")
+car =loadCar("../1-map-training-1/car.txt")
+#car.sort(key=lambda c:c.plantTime,reverse=False)
+# for c in car:
+#     print(c)
+
+# now_pos=[0,0]
 
 
 
@@ -237,8 +137,18 @@ a=time.time()
 
 for c in range(len(crossPool)):
     path.update({map_cross[c]:alg.dijkstra(mapp, c,crossPool,roadPool)})
-print(time.time()-a)
+now_time=6
+for c in car:
+    car[c].addAnswer(path)
+    roadLength=0
+    minSpeed=1000
+    for i in car[c].path:
+        roadLength+=roadPool[i].length
+        minSpeed=min(roadPool[i].speed,minSpeed)
+    car[c].bestStartTime = now_time
+    now_time += int(roadLength/minSpeed)
 
+dumpAnswer("./answer.txt",car)
 
 print(path)
 

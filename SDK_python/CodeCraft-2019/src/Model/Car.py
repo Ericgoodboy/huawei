@@ -6,13 +6,14 @@ class Car(object):
         self.speed=speed
         self.plantTime=planTime
         self.answer=[]
-
+        self.startTime=0
+        self.bestStartTime=0
         self.isReadyToGo=False
         self.isEnded=False
     def nextToGo(self):
         pass
     def addAnswer(self,path):
-        self.path=path
+        self.path=[i for i in path[self.fromCrossId][self.toCrossId]]
         pass
     def getRoadline(self,crossPool,num):
         import math
