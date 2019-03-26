@@ -46,6 +46,7 @@ def loadCar(carPath):
     for d in datas:
         road = Car.Car(d[0], d[1], d[2], d[3], d[4])
         carPool.append(road)
+    carPool.sort(key=lambda car: (car.fromCrossId, car.plantTime))
     carDic={car.id : car for car in carPool}
     return carDic
 
@@ -148,16 +149,15 @@ def main():
 
     for c in range(len(crossPool)):
         path.update({map_cross[c]: alg.dijkstra(mapp, c, crossPool, roadPool)})
-    now_time = 10
+    now_time = 1
+    flag=1
     for c in car:
         car[c].addAnswer(path)
-        roadLength = 0
-        minSpeed = 1000
-        for i in car[c].path:
-            roadLength += roadPool[i].length
-            minSpeed = min(roadPool[i].speed, minSpeed)
-        car[c].bestStartTime = now_time
-        now_time += int(roadLength / minSpeed)+1
+        # roadLength = 0
+        #         # minSpeed = 1000
+        car[c].bestStartTime = max(now_time,car[c].plantTime)
+        now_time += 1 if flag%6==0 else 0
+        flag += 1
 
     dumpAnswer(answer_path, car)
 # to read input file
