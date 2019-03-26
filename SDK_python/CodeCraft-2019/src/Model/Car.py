@@ -10,6 +10,21 @@ class Car(object):
         self.bestStartTime=0
         self.isReadyToGo=False
         self.isEnded=False
+        self.direction = [0, 0, 0, 0]
+
+    def addDirection(self, direction):
+        a = direction[0] - direction[2]
+        b = direction[1] - direction[3]
+        if a == 0 or b == 0:
+            self.direction = 0
+        elif a > 0 and b > 0:
+            self.direction = 1
+        elif a > 0 and b < 0:
+            self.direction = 2
+        elif a < 0 and b < 0:
+            self.direction = 3
+        else:
+            self.direction = 4
     def nextToGo(self):
         pass
     def addAnswer(self,path):

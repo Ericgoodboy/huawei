@@ -10,6 +10,7 @@ class Road():
         self.channel=channel
         self.toCrossId=toCrossId
         self.isDuplex=isDuplex
+        self.arg=0
         if isDuplex:
             self.placesA=numpy.zeros((channel,length),dtype="int32")#from - to
             self.placesB=numpy.zeros((channel,length),dtype="int32")#to - from

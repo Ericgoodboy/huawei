@@ -46,7 +46,7 @@ def loadCar(carPath):
     for d in datas:
         road = Car.Car(d[0], d[1], d[2], d[3], d[4])
         carPool.append(road)
-    carPool.sort(key=lambda car: (car.fromCrossId, car.plantTime))
+    #carPool.sort(key=lambda car: (car.fromCrossId, car.plantTime))
     carDic={car.id : car for car in carPool}
     return carDic
 
@@ -83,9 +83,9 @@ def get_map(crosses, roads):
                         nextCross = road.toCrossId
                         if road.isDuplex == 1:
                             if sorted([previousCross,nextCross]) == sorted([crosses[map[i]].id,crosses[map[j]].id]):
-                                graph_list[i][j] = road.length
+                                graph_list[i][j] = (road.length/road.speed)*road.arg
                         elif previousCross == crosses[map[i]].id and nextCross == crosses[map[j]].id:
-                             graph_list[i][j] = road.length
+                             graph_list[i][j] = (road.length/road.speed)*road.arg
                         else:
                             pass
     return graph_list
@@ -119,8 +119,85 @@ def dumpAnswer(path,cars):
             tempStr=str(cars[car].id)+" ,"+str(cars[car].bestStartTime)+" ,"+" ,".join([str(i) for i in cars[car].path])
             tempStr="("+tempStr+")\r"
             f.writelines(tempStr)
+def process(car,roadPool,crossPool):
+    from huaweiUtil import alg
+    mapp = get_map(crossPool, roadPool)
+    map_cross = []
+    for cross in crossPool:
+        map_cross.append(cross)
+
+    path = {}
+    import time
+    a = time.time()
+    #
+    for c in range(len(crossPool)):
+        path.update({map_cross[c]: alg.dijkstra(mapp, c, crossPool, roadPool)})
+
+    carPool=car
+    count = {road: 0 for road in roadPool}  # 记录每条道路使用数量
+    global position
+
+    moveTime = {car: 0 for car in carPool}  # 记录每条路径所用时间
+    lose = 0
+
+    for c in car:
+        car[c].addAnswer(path)
+
+    for row in carPool:
+        nowPlace=carPool[row].fromCrossId
+        for i in carPool[row].path:
+            # 判断时间
+            length = roadPool[i].length
+            limitSpeed = roadPool[i].speed
+            carSpeed = carPool[row].speed
+            actualSpeed = min(limitSpeed, carSpeed)
+            # planTime到实际调用的时间差
+            plantTime = carPool[row].plantTime
+            realTime = carPool[row].bestStartTime
+            gapTime = realTime - plantTime
+            # 时间差完成
+            if i != 2:
+                if lose > actualSpeed:
+                    lose = 0
+                    moveTime[row] += 1
+                else:
+                    lose -= actualSpeed
+                    moveTime[row] += 1
+            lose = (lose + length) % actualSpeed
+            moveTime[row] += (lose + length) // actualSpeed
+            # moveTime[carId] += gapTime
+            # 判断时间完成
+            count[i] += 1  # 计数
+            # 计算方位
+            toCrossId=roadPool[i].fromCrossId if roadPool[i].fromCrossId!=nowPlace else roadPool[i].toCrossId
+            car[row].direction[crossPool[nowPlace].allRoad.index(i)] += 1
+            nowPlace=toCrossId
+    for i in carPool:
+        carPool[i].addDirection(carPool[i].direction)
+    cartemp=[car[i] for i in car]
+    import math
+    cartemp.sort(key=lambda car:(car.fromCrossId,car.toCrossId))
+    now_time = 0
+    flag = 1
+    k=9
+    car={i.id:i for i in cartemp}
 
 
+    for c in car:
+        # roadLength = 0
+        #         # minSpeed = 1000
+        # if car[c].direction==0:
+        #     continue
+        car[c].bestStartTime = max(int(now_time), car[c].plantTime)
+        #if car[c].direction !=0:
+        now_time += 1 if flag %12==0 else 0
+        flag +=1
+         # 计算方位完成
+    #now_time+300
+
+    # for c in car:
+    #     if car[c].direction==0:
+    #         car[c].bestStartTime = max(int(now_time), car[c].plantTime)
 def main():
     # if len(sys.argv) != 5:
     #     print("11111111111111")
@@ -136,29 +213,7 @@ def main():
     logging.info("answer_path is %s" % (answer_path))
     crossPool, roadPool = loadMap(cross_path, road_path)
     car = loadCar(car_path)
-    print(len(roadPool))
-    from huaweiUtil import alg
-    mapp = get_map(crossPool, roadPool)
-    map_cross = []
-    for cross in crossPool:
-        map_cross.append(cross)
-
-    path = {}
-    import time
-    a = time.time()
-
-    for c in range(len(crossPool)):
-        path.update({map_cross[c]: alg.dijkstra(mapp, c, crossPool, roadPool)})
-    now_time = 1
-    flag=1
-    for c in car:
-        car[c].addAnswer(path)
-        # roadLength = 0
-        #         # minSpeed = 1000
-        car[c].bestStartTime = max(now_time,car[c].plantTime)
-        now_time += 1 if flag%6==0 else 0
-        flag += 1
-
+    process(car,roadPool,crossPool)
     dumpAnswer(answer_path, car)
 # to read input file
 # process
