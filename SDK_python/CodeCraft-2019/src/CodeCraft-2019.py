@@ -1,3 +1,5 @@
+import time
+start_time=time.time()
 import logging
 import sys
 logging.basicConfig(level=logging.DEBUG,
@@ -32,7 +34,6 @@ def loadCrossPool(crossPath):
 def loadRoadPool(roadPath):
     datas=loadData.loadData(roadPath)
     roadPool=[]
-    print(datas)
     for d in datas:
         road=Road.Road(d[0],d[1],d[2],d[3],d[4],d[5],d[6])
         roadPool.append(road)
@@ -42,7 +43,6 @@ def loadRoadPool(roadPath):
 def loadCar(carPath):
     datas = loadData.loadData(carPath)
     carPool = []
-    print(datas)
     for d in datas:
         road = Car.Car(d[0], d[1], d[2], d[3], d[4])
         carPool.append(road)
@@ -121,10 +121,10 @@ def dumpAnswer(path,cars):
 
 
 def main():
-    if len(sys.argv) != 5:
-        print("11111111111111")
-        logging.info('please input args: car_path, road_path, cross_path, answerPath')
-        exit(1)
+    # if len(sys.argv) != 5:
+    #     print("11111111111111")
+    #     logging.info('please input args: car_path, road_path, cross_path, answerPath')
+    #     exit(1)
     car_path = sys.argv[1]
     road_path = sys.argv[2]
     cross_path = sys.argv[3]
@@ -133,8 +133,9 @@ def main():
     logging.info("road_path is %s" % (road_path))
     logging.info("cross_path is %s" % (cross_path))
     logging.info("answer_path is %s" % (answer_path))
-    crossPool, roadPool = loadMap("../1-map-training-1/cross.txt", "../1-map-training-1/road.txt")
-    car = loadCar("../1-map-training-1/car.txt")
+    crossPool, roadPool = loadMap(cross_path, road_path)
+    car = loadCar(car_path)
+    print(len(roadPool))
     from huaweiUtil import alg
     mapp = get_map(crossPool, roadPool)
     map_cross = []
@@ -147,7 +148,7 @@ def main():
 
     for c in range(len(crossPool)):
         path.update({map_cross[c]: alg.dijkstra(mapp, c, crossPool, roadPool)})
-    now_time = 6
+    now_time = 10
     for c in car:
         car[c].addAnswer(path)
         roadLength = 0
@@ -156,9 +157,9 @@ def main():
             roadLength += roadPool[i].length
             minSpeed = min(roadPool[i].speed, minSpeed)
         car[c].bestStartTime = now_time
-        now_time += int(roadLength / minSpeed)
+        now_time += int(roadLength / minSpeed)+1
 
-    dumpAnswer("./answer.txt", car)
+    dumpAnswer(answer_path, car)
 # to read input file
 # process
 # to write output file
@@ -166,3 +167,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print(time.time()-start_time)
