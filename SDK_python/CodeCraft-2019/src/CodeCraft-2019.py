@@ -127,12 +127,9 @@ def process(car,roadPool,crossPool):
         map_cross.append(cross)
 
     path = {}
-    import time
-    a = time.time()
     #
     for c in range(len(crossPool)):
         path.update({map_cross[c]: alg.dijkstra(mapp, c, crossPool, roadPool)})
-
     carPool=car
     count = {road: 0 for road in roadPool}  # 记录每条道路使用数量
     global position
@@ -172,11 +169,15 @@ def process(car,roadPool,crossPool):
             toCrossId=roadPool[i].fromCrossId if roadPool[i].fromCrossId!=nowPlace else roadPool[i].toCrossId
             car[row].direction[crossPool[nowPlace].allRoad.index(i)] += 1
             nowPlace=toCrossId
+    k=1
     for i in carPool:
         carPool[i].addDirection(carPool[i].direction)
+        k+=carPool[i].reRoad(roadPool,crossPool)
+    print(k)
+    del k
     cartemp=[car[i] for i in car]
     import math
-    cartemp.sort(key=lambda car:(car.fromCrossId,car.toCrossId))
+    cartemp.sort(key=lambda car:(car.fromCrossId,len(car.path),-car.speed))
     now_time = 0
     flag = 1
     k=9
@@ -190,7 +191,8 @@ def process(car,roadPool,crossPool):
         #     continue
         car[c].bestStartTime = max(int(now_time), car[c].plantTime)
         #if car[c].direction !=0:
-        now_time += 1 if flag %12==0 else 0
+        now_time += 1 if flag %25==0 else 0
+
         flag +=1
          # 计算方位完成
     #now_time+300

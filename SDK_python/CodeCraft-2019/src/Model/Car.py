@@ -1,3 +1,5 @@
+import numpy as np
+np.random.seed(123)
 class Car(object):
     def __init__(self,id,fromCrossId,toCrossId,speed,planTime):
         self.id=id
@@ -16,15 +18,64 @@ class Car(object):
         a = direction[0] - direction[2]
         b = direction[1] - direction[3]
         if a == 0 or b == 0:
-            self.direction = 0
+            self.direct = 0
         elif a > 0 and b > 0:
-            self.direction = 1
+            self.direct = 1
         elif a > 0 and b < 0:
-            self.direction = 2
+            self.direct = 2
         elif a < 0 and b < 0:
-            self.direction = 3
+            self.direct = 3
         else:
-            self.direction = 4
+            self.direct = 4
+    def reRoad(self,roadPool,crossPool):
+        a=np.random.randint(2)
+        count=0
+        for i in self.direction:
+            if i>0:
+                count+=1
+        if count<3:
+            tempPath1=[]
+            cango1=True
+            tempPath2=[]
+            cango2=True
+            now_cross=self.fromCrossId
+            index=0
+            for i in self.direction:
+                for j in range(i):
+                    if crossPool[now_cross].allRoad[index] !=-1:
+                        cross=roadPool[crossPool[now_cross].allRoad[index]]
+                        tempPath1.append(crossPool[now_cross].allRoad[index])
+                        if True!= cross.isDuplex and cross.fromCrossId!=now_cross:
+                            cango1=False
+                        now_cross=cross.fromCrossId if now_cross==cross.toCrossId else cross.toCrossId
+                    else:
+                        cango1=False
+                index+=1
+            index=3
+            now_cross = self.fromCrossId
+            self.direction.reverse()
+            for i in self.direction:
+                for j in range(i):
+                    if crossPool[now_cross].allRoad[index] !=-1:
+                        cross=roadPool[crossPool[now_cross].allRoad[index]]
+                        tempPath2.append(crossPool[now_cross].allRoad[index])
+                        if True!= cross.isDuplex and cross.fromCrossId!=now_cross:
+                            cango2=False
+                        now_cross=cross.fromCrossId if now_cross==cross.toCrossId else cross.toCrossId
+                    else:
+                        cango2=False
+                index-=1
+            self.direction.reverse()
+            if cango1 and cango2:
+                self.path=tempPath1 if np.random.randint(2)==0 else tempPath2
+                return 1
+            elif cango1:
+                self.path=tempPath1
+                return 1
+            elif cango2:
+                self.path=tempPath2
+                return 1
+        return 0
     def nextToGo(self):
         pass
     def addAnswer(self,path):
