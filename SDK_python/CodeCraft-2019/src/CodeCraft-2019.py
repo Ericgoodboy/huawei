@@ -55,6 +55,13 @@ def loadCar(carPath,preset_answer_path):
         presetCarPool.update({id:carDic[id]})
         carDic.pop(id)
     return presetCarPool,carDic
+def toBacket(carPool):
+    temp={}
+    for i in range(9):
+        temp.update({i:[]})
+    for car in carPool:
+        temp[carPool[car].place].append(carPool[car])
+    return temp
 
 
 # 生成地图
@@ -131,12 +138,13 @@ def process(presetCarPool,car,roadPool,crossPool):
             nowPlace=toCrossId
 
     for i in carPool:
-        # carPool[i].zoning(maxPos,crossPool)
         # carPool[i].addMaxRoadId(carPool[i].path, count)
         carPool[i].addDirection(carPool[i].direction)
         carPool[i].reRoad(roadPool,crossPool)
+        carPool[i].zoning(maxPos,crossPool)
     cartemp=[car[i] for i in car]
-    cartemp.sort(key=lambda car:(car.fromCrossId,len(car.path),-car.speed))
+    cartemp.sort(key=lambda car:(-car.priority,car.fromCrossId,len(car.path),-car.speed))
+    cartemp=cartemp[1:]+[cartemp[0]]
     car={i.id:i for i in cartemp}
 
     # #方位法
@@ -150,13 +158,22 @@ def process(presetCarPool,car,roadPool,crossPool):
     #     car[c].bestStartTime = max(int(nowTimePool[num]), car[c].plantTime)
     #     nowTimePool[num] += 1 if flagPool[num] % sendCar[num] == 0 else 0
     #     flagPool[num] += 1
-    flag = 1
+    bactetedCar=toBacket(car)
+    allInTime=3000
+    start_time
+    testList={place:[0,allInTime/len(bactetedCar[place])] for place in bactetedCar}
+    for i in bactetedCar:
 
-    nowTime = 800
-    for c in car:
-        car[c].bestStartTime = nowTime
-        nowTime += 1 if flag % 10 == 0 else 0
-        flag += 1
+        for car in bactetedCar[i]:
+            testList[i][0]+=testList[i][1]
+            startTime=max(int(testList[i][0]+start_time),car.plantTime)
+            car.bestStartTime=startTime
+    # flag = 1
+    # nowTime = 800
+    # for c in car:
+    #     car[c].bestStartTime = max(nowTime,car[c].plantTime)
+    #     nowTime += 1 if flag % 15 == 0 else 0
+    #     flag += 1
 
 
 

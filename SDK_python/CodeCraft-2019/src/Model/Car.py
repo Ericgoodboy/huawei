@@ -102,16 +102,19 @@ class Car(object):
     # 0为初始值，1为左下，2为左上，3为右下，4为右上下同
     def zoning(self, maxpos, crossPool):
         crossPos = crossPool[self.fromCrossId].pos
-        midX = maxpos[0] / 2
-        midY = maxpos[1] / 2
-        if crossPos[0] < midX and crossPos[1] < midY:
-            self.fromPos = 1
-        elif crossPos[0] < midX and crossPos[1] > midY:
-            self.fromPos = 2
-        elif crossPos[0] > midX and crossPos[1] < midY:
-            self.fromPos = 3
-        else:
-            self.fromPos = 4
+        midX1 = maxpos[0]*1 / 3
+        midX2 = maxpos[0] * 2 / 3
+        midY1 = maxpos[1] * 1/ 3
+        midY2 = maxpos[1] * 2 / 3
+        a=self.__calPlace(mid1=midX1,mid2=midX2,item=crossPos[0])
+        b=self.__calPlace(mid1=midY1,mid2=midY2,item=crossPos[1])
+        self.place=a * 3 + b
+    def __calPlace(self,mid1,mid2,item):
+        if item<mid1:
+            return 0
+        elif item<mid2:
+            return 1
+        else:return 2
     # 把路线捋直
     def reRoad(self, roadPool, crossPool):
         a = np.random.randint(2)
