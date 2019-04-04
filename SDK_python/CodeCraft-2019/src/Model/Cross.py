@@ -11,7 +11,14 @@ class Cross(object):
         self.allRoad =[nRoadId,eRoadId,sRoadId,wRoadId]#n=0,e=1,s=
         self.flag=0
         self.pos=()
-
+        self.calPlaceFlag=0
+    def moveAllRoad(self,roadId,index):
+        index=index%4
+        indexnow=self.allRoad.index(roadId)
+        neg=(index-indexnow)%4
+        for i in range(neg):
+            self.allRoad.insert(0,self.allRoad.pop())
+        pass
     def link(self,road):
         if road.id == self.nRoadId:
             self.nRoad=road

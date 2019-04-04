@@ -31,7 +31,7 @@ def dijkstra(graph, src,crossPool,roadPool):
         distance[k] = mid_distance  # 最短路径
         p=0
         for i in crossPool[map_cross[pre]].allRoad:
-            if i is not -1:
+            if i != -1:
                 if roadPool[i].fromCrossId==map_cross[k] or roadPool[i].toCrossId ==map_cross[k]:
                     p=i
         path[k] = [i for i in path[pre]]
@@ -40,22 +40,22 @@ def dijkstra(graph, src,crossPool,roadPool):
         nodes.remove(k)
     path={map_cross[p]:path[p] for p in path}
     return path
-def score(crossPool,carPool,roadPool):
-    countEndedCar=0
-    processCarPool={car:carPool[car] for car in carPool}
-    timeid=1
-    processingCarPool = {}
-    while len(processCarPool)>0:
-        timePool={car:processCarPool[car] for car in processCarPool if processCarPool[car].starttime==i}
-        processingCarPool.update(timePool)
-        processingCarPoolLength=len(processCarPool)
-        processedLength=0
-        while processedLength<processingCarPoolLength:
-            #每完成一次调度，processedLength+=1
-            for car in timePool:
-                pass
-            pass
-
+def calPlace(cross,crossPool,roadPool,now_placew):
+    cross.pos=(now_placew[0],now_placew[1])
+    absPlace=[(0,1),(1,0),(0,-1),(-1,0)]
+    for i in cross.allRoad:
+        if i == -1:
+            continue
+        else:
+            index=cross.allRoad.index(i)
+            road=roadPool[i]
+            indexNext=road.fromCrossId if road.fromCrossId!=cross.id else road.toCrossId
+            new_place=(absPlace[index][0]+now_placew[0],absPlace[index][1]+now_placew[1])
+            next_index=crossPool[indexNext].allRoad.index(i)
+            if (next_index-index)%4 !=2:
+                crossPool[indexNext].moveAllRoad(i,index-2)
+            if crossPool[indexNext].pos == ():
+                calPlace(crossPool[indexNext], crossPool, roadPool,new_place)
 
 
 
