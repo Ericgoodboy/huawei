@@ -51,7 +51,7 @@ def loadCar(carPath,preset_answer_path):
         path=a[2:]
         carDic[id].bestStartTime=best_time
         carDic[id].path=path
-        print("loadCar,path:",path)
+        # print("loadCar,path:",path)
         presetCarPool.update({id:carDic[id]})
         carDic.pop(id)
     return presetCarPool,carDic
@@ -91,6 +91,17 @@ def get_map(crosses, roads):
                             pass
     return graph_list
 
+def showMap(crossList):
+    tempLine=crossList[0].pos[0]
+    tempStr=""
+    for cross in crossList:
+        if cross.pos[0]!=tempLine:
+            tempLine = cross.pos[0]
+            tempStr+="\n"
+        tempStr+=str(cross.pos)
+    print(tempStr)
+
+
 #得出答案
 def dumpAnswer(path,cars):
     with open(path,"w") as f:
@@ -116,6 +127,7 @@ def process(presetCarPool,car,roadPool,crossPool):
     alg.calPlace(crossPool[minid], crossPool, roadPool, (0, 0))
     testList = [crossPool[c] for c in crossPool]
     testList.sort(key=lambda x: (x.pos[0], x.pos[1]))
+    # showMap(testList)
     maxPos = testList[-1].pos
 
     for c in range(len(crossPool)):
@@ -125,7 +137,7 @@ def process(presetCarPool,car,roadPool,crossPool):
 
     for c in carPool:
         carPool[c].addAnswer(path)
-        print("processing path:",carPool[c].path)
+        # print("processing path:",carPool[c].path)
 
 
     for row in carPool:
@@ -159,14 +171,18 @@ def process(presetCarPool,car,roadPool,crossPool):
     #     nowTimePool[num] += 1 if flagPool[num] % sendCar[num] == 0 else 0
     #     flagPool[num] += 1
     bactetedCar=toBacket(car)
-    allInTime=3000
-    start_time
+    allInTime=2000
+    start_time=800
+    startSpeed=20
     testList={place:[0,allInTime/len(bactetedCar[place])] for place in bactetedCar}
+    print(testList)
     for i in bactetedCar:
-
         for car in bactetedCar[i]:
-            testList[i][0]+=testList[i][1]
-            startTime=max(int(testList[i][0]+start_time),car.plantTime)
+            if testList[i][0]<start_time:
+                testList[i][0]+=startSpeed
+            else:
+                testList[i][0]+=testList[i][1]
+            startTime=max(int(testList[i][0]),car.plantTime)
             car.bestStartTime=startTime
     # flag = 1
     # nowTime = 800
