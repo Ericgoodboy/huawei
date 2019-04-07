@@ -215,6 +215,12 @@ def main():
 
     process(presetCarPool, carPool, roadPool, crossPool)
     carPool.update(presetCarPool)
+    # mm=(carPool, roadPool, crossPool)
+    # import pickle
+    # with open("a.pkl","w") as f:
+    #     pickle.dump(mm,f)
+    # from huaweiUtil import JudgeApp
+    # JudgeApp.judge(carPool, roadPool, crossPool)
     dumpAnswer(answer_path, carPool)
 # to read input carPool
 # process
