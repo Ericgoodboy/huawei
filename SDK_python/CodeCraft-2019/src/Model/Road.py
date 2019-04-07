@@ -71,12 +71,12 @@ class Road():
         headList=[True for i in range(colum)]
         for i in range(row):
             for j in range(colum):
-                if headList[j]!=True:
+                if headList[j] != True:
                     continue
                 if direction[j][rowIndex]!=0:
                     headList[j]=False
                     car = carPool[direction[j][rowIndex]]
-                    if car.isReadyToGo ==True:
+                    if car.isReadyToGo ==True and car.canGoOnRoad == False:#shi不是要转弯？
                         if car.priority==1:
                             return car
                         else:

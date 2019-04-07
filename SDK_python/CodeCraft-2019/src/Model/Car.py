@@ -43,7 +43,7 @@ class Car(object):
     def goOnRoad(self,crossPool,roadPool,carPool):
         road=self.nowRoad
         if self.canGoOnRoad:
-            index,carId=self.handleChannel(min(road.speed,self.speed))
+            index,carId=self.handleChannel(min(road.speed, self.speed))
             if carId!=0:
                 car = carPool[carId]
                 if car.isReadyToGo==False:#当前面的车进入终止状态，本车也进入终止状态
@@ -104,15 +104,17 @@ class Car(object):
                     toIndex = cross.allRoad.index(nextRoad.id)
                     self.togoNext=(fromIndex-toIndex)%4
 
-    def handelPlace(self,direction,length):
+    def handelPlace(self,direction,length,carPool):
         for channel in direction:
             if channel[0]!=0:
+                if carPool[channel[0]].isReadyToGo== True:
+                    return None ,-1
                 continue
             cloum=0
             for place in channel:
                 if place != 0:
                     return channel,cloum-1
-                if cloum==(length -1):
+                if cloum>=(length -1):
                     return channel,cloum
                 cloum+=1
             return channel, cloum-1
@@ -134,8 +136,17 @@ class Car(object):
             nextRoad=roadPool[self.path[nowIndex+1]]
             direction=nextRoad.directions[0] if nextRoad.fromCrossId==cross else nextRoad.directions[1]
             length=min(nextRoad.speed,self.speed)-self.lest#待验证
-            channel,index = self.handelPlace(direction,length)
+            if length<=0:
+                self.carMove(self.nowChannel, len(self.nowChannel) - 1, self.nowRoad, crossPool, roadPool)
+                return True, False
+            channel,index = self.handelPlace(direction,length,carOnRoad)
+            if length==0:
+                print(channel,index)
             if channel is not None:
+                if index < length -1:#---------------
+                    car = carOnRoad[channel[index + 1]]  # nowchanged
+                    if car.isReadyToGo == True:
+                        return False,False
                 self.carMove(channel,index,nextRoad,crossPool,roadPool)
                 return True,False
             elif self.lest==0:
@@ -146,13 +157,17 @@ class Car(object):
                         return False,False
                 return True,False
             else:#toChannel,toIndex,road,crossPool,roadPool
+                for c in direction:
+                    if carOnRoad[c[0]].isReadyToGo==True:
+                        self.isReadyToGo=True
+                        return False,False
                 self.carMove(self.nowChannel,len(self.nowChannel)-1,self.nowRoad,crossPool,roadPool)
                 return True,False
 
     def runToRoad(self,carPool,roadPool,crossPool):
         road=roadPool[self.path[0]]
         direction=road.directions[0] if road.fromCrossId==self.fromCrossId else road.directions[1]
-        channel,index= self.handelPlace(direction,min(self.speed,road.speed))
+        channel,index= self.handelPlace(direction,min(self.speed,road.speed),carPool)
         if channel is None:
             return False
         else:#toChannel,toIndex,road,crossPool,roadPool

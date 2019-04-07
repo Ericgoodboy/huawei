@@ -101,10 +101,10 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
             roadList=[i for i in crossPool[cross].allRoad]
             roadList.sort()
             for r in roadList:
-                if r==-1:
+                if r == -1:
                     continue
-                road=roadPool[r]
-                dir=[]
+                road = roadPool[r]
+                dir = []
                 car = road.getFirstToGoCar(crossPool[cross],carPool)
                 while car != False:
                     if conflict(cross,car,road,carOnRoad,crossPool,roadPool,carPool):
@@ -122,7 +122,21 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
         nowProcess = [car for car in carOnRoad if carOnRoad[car].isReadyToGo==True]
         if len(nowProcess)==0:
             allCarInEndState = True
-        elif len(nowProcess)==len(lastProcess):
+        elif tuple(nowProcess)==tuple(lastProcess):
+            roadsss = []
+
+            print("*********************************")
+            for i in nowProcess:
+                print(carOnRoad[i].nowRoad)
+                if carOnRoad[i].nowRoad not in roadsss:
+                    roadsss.append(carOnRoad[i].nowRoad)
+            print("*********************************")
+            for r in roadsss:
+                print("----------", r.id, "----------------")
+                print(r)
+                print("r.speed:", r.speed)
+                print(r.directions)
+                print("--------------------------")
             print("dead lock")
             exit(0)
         lastProcess=nowProcess
@@ -147,7 +161,7 @@ def conflict(cross,car,road,carOnRoad,crossPool,roadPool,carPool):#有问题
             else:
                 road1 = roadPool[road1Id]
                 car1 = road1.getFirstToGoCar(cross, carPool)
-        if hasRoad1 and car1 != False and car1.togoNext == 0 and car1.priority > car.priority:
+        if hasRoad1 and car1 != False and (car1.togoNext == 0 or car1.togoNext == 2) and car1.priority > car.priority:
             return True
         return False
     if car.togoNext == 2:
