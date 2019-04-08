@@ -28,32 +28,24 @@ class Road():
                 continue
             if i == 1 and crossId == self.fromCrossId:
                 continue
-            if len(self.InitCar[i])==0:
+            if len(self.InitCar[i]) == 0:
                 continue
+            toGoCars=[]
             if priority:
-                car = self.InitCar[i][0]
-                while car.priority==1 and car.bestStartTime<=nowTime:
-                    isGo=car.runToRoad(carPool,roadPool,crossPool)
-                    if isGo:
-                        goneCar.update({car.id:car})
-                        self.InitCar[i].remove(car)
-                    else:
-                        break
-                    if len(self.InitCar[i])==0:
-                        break
-                    car=self.InitCar[i][0]
+                toGoCars=[car for car in self.InitCar[i] if car.priority==1 and car.bestStartTime<=nowTime]
             else:
-                car = self.InitCar[i][0]
-                while car.bestStartTime<=nowTime:
-                    isGo=car.runToRoad(carPool,roadPool,crossPool)
-                    if isGo:
-                        goneCar.update({car.id:car})
-                        self.InitCar[i].remove(car)
-                    else:
-                        break
-                    if len(self.InitCar[i])==0:
-                        break
-                    car = self.InitCar[i][0]
+                toGoCars = [car for car in self.InitCar[i] if car.bestStartTime <= nowTime]
+
+            #修改了
+
+            for car in toGoCars:
+                isGo=car.runToRoad(carPool,roadPool,crossPool)
+                if isGo:
+                    goneCar.update({car.id:car})
+                    self.InitCar[i].remove(car)
+
+
+
         return goneCar
 
     def getFirstToGoCar(self,cross,carPool):

@@ -148,8 +148,8 @@ class Car(object):
                     if car.isReadyToGo == True:
                         return False,False
                 self.carMove(channel,index,nextRoad,crossPool,roadPool)
-                return True,False
-            elif self.lest==0:
+                return True, False
+            elif self.lest == 0:
                 self.isReadyToGo=False
                 for c in direction:
                     if carOnRoad[c[0]].isReadyToGo==True:
@@ -160,11 +160,11 @@ class Car(object):
                 for c in direction:
                     if carOnRoad[c[0]].isReadyToGo==True:
                         self.isReadyToGo=True
-                        return False,False
+                        return False, False
                 self.carMove(self.nowChannel,len(self.nowChannel)-1,self.nowRoad,crossPool,roadPool)
-                return True,False
+                return True, False
 
-    def runToRoad(self,carPool,roadPool,crossPool):
+    def runToRoad (self, carPool ,roadPool ,crossPool):
         road=roadPool[self.path[0]]
         direction=road.directions[0] if road.fromCrossId==self.fromCrossId else road.directions[1]
         channel,index= self.handelPlace(direction,min(self.speed,road.speed),carPool)
