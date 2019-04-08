@@ -85,23 +85,6 @@ def get_map(crosses, roads):
 
 
 
-def draw2(cross,crossPool,roadPool):
-    if cross.flag==1:
-        return
-    cross.pos=(now_pos[0],now_pos[1])
-    if cross.eRoadId != -1:
-        now_pos[0]+=50
-        if cross.eRoad.fromCrossId==cross.id:
-            draw2(cross.eRoad.toCross)
-        else:draw2(cross.eRoad.fromCross)
-        now_pos[0]-=50
-    if cross.nRoadId != -1:
-        now_pos[1]+=50
-        if cross.nRoad.fromCrossId==cross.id:
-            draw2(cross.nRoad.toCross)
-        else:draw2(cross.nRoad.fromCross)
-        now_pos[1]-=50
-    cross.flag=1
 
 
 

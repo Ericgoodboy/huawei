@@ -4,6 +4,7 @@ class Car(object):
     CARINPORT=0
     def __init__(self,id,fromCrossId,toCrossId,speed,planTime,priority,preset):
         self.id=id
+        self.arriveTime=0
         self.fromCrossId=fromCrossId
         self.toCrossId=toCrossId
         self.speed=speed
@@ -14,7 +15,7 @@ class Car(object):
         self.direction = [0, 0, 0, 0]
         self.nowRoad=-1
         self.canGoOnRoad = True
-        self.isReadyToGo = False
+        self.isReadyToGo = True
         self.togoNext = -1
         self.lest=0
         self.path=[]
@@ -42,35 +43,23 @@ class Car(object):
 
     def goOnRoad(self,crossPool,roadPool,carPool):
         road=self.nowRoad
+        if self.isReadyToGo == False:
+            return
         if self.canGoOnRoad:
+
             index,carId=self.handleChannel(min(road.speed, self.speed))
             if carId!=0:
                 car = carPool[carId]
-                if car.isReadyToGo==False:#当前面的车进入终止状态，本车也进入终止状态
-                    self.isReadyToGo=False
+                if car.isReadyToGo == False:#当前面的车进入终止状态，本车也进入终止状态
+                    self.carMove(self.nowChannel,index,road,crossPool,roadPool)
             else:
                 self.carMove(self.nowChannel,index,road,crossPool,roadPool)
         else:
             index, carId = self.handleChannel(min(road.speed, self.speed,self.lest))
-            # if self.id == 61122:
-            #     # print("()()()()()()()()()()()()()()(")
-            #     # print(index,carId)
-            #     # print(self.nowChannel)
-            #     # print(self.isReadyToGo)
-            #     # print(self.nowRoad.id)
-
             if carId!=0:
                 car = carPool[carId]
-                # if self.id == 61122:
-                #     # print("<<<<<<<<<<<<<<<<<<<<<")
-                #     # print(index, carId)
-                #     # print(self.nowChannel)
-                #     # print(self.isReadyToGo)
-                #     # print(self.nowRoad.id)
-                #     # print(car.isReadyToGo)
-                #     # print(">>>>>>>>>>>>>>>>>>>>")
-                if car.isReadyToGo==False:#当前面的车进入终止状态，本车也进入终止状态
-                    self.isReadyToGo=False
+                if car.isReadyToGo == False:#当前面的车进入终止状态，本车也进入终止状态
+                    self.carMove(self.nowChannel,index,road,crossPool,roadPool)
     def carMove(self,toChannel,toIndex,road,crossPool,roadPool):#road 是对象
         # print("car:",self.id,"wo zai zou ",self.nowRoad,">",road,">",toIndex)
         if self.nowChannel is not "start":
@@ -84,15 +73,22 @@ class Car(object):
             print("about Car :",self.id)
             print("----------------------------------------")
             return
+        if self.isReadyToGo==False:
+            print("----------------------------------------")
+            print("***** WARNING IMPORTANT WARING *********")
+            print("road Channel:",self.nowChannel)
+            print("about Car :",self.id)
+            print("is ready to go == False")
+            print("----------------------------------------")
+            # return
         else:
-            self.nowChannel=toChannel
-            toChannel[toIndex]=self.id
-            self.isReadyToGo=False
-            self.lest=len(toChannel)-toIndex-1
-            self.canGoOnRoad=self.lest>= min(road.speed,self.speed)
-            self.nowRoad=road
-            if self.canGoOnRoad==False:
-
+            self.nowChannel = toChannel
+            toChannel[toIndex] = self.id
+            self.isReadyToGo = False
+            self.lest = len(toChannel)-toIndex-1
+            self.canGoOnRoad = self.lest>= min(road.speed,self.speed)
+            self.nowRoad = road
+            if self.canGoOnRoad == False:
                 if self.nowRoad.id== self.path[-1]:
                     self.togoNext=0
                 else:
@@ -102,12 +98,12 @@ class Car(object):
                     cross = crossPool[crossID]
                     fromIndex=cross.allRoad.index(self.nowRoad.id)
                     toIndex = cross.allRoad.index(nextRoad.id)
-                    self.togoNext=(fromIndex-toIndex)%4
+                    self.togoNext = (fromIndex-toIndex) % 4
 
-    def handelPlace(self,direction,length,carPool):
+    def handelPlace(self, direction, length, carPool):
         for channel in direction:
             if channel[0]!=0:
-                if carPool[channel[0]].isReadyToGo== True:
+                if carPool[channel[0]].isReadyToGo == True:
                     return None ,-1
                 continue
             cloum=0
@@ -120,12 +116,13 @@ class Car(object):
             return channel, cloum-1
         return None,-1
 
-    def moveToNextRoad(self,carOnRoad,cross,crossPool,roadPool):#待定
+    def  moveToNextRoad(self,stamptime,carOnRoad,cross,crossPool,roadPool):#待定
         if self.togoNext==0:
             # print("有车入库了:",self.id)
             Car.CARINPORT+=1
             #print(" Car.CARINPORT", Car.CARINPORT)
             self.endState=True
+            self.arriveTime=stamptime
             carOnRoad.pop(self.id)
             templist=list(self.nowChannel)
             tempIndex=templist.index(self.id)
@@ -140,8 +137,7 @@ class Car(object):
                 self.carMove(self.nowChannel, len(self.nowChannel) - 1, self.nowRoad, crossPool, roadPool)
                 return True, False
             channel,index = self.handelPlace(direction,length,carOnRoad)
-            if length==0:
-                print(channel,index)
+
             if channel is not None:
                 if index < length -1:#---------------
                     car = carOnRoad[channel[index + 1]]  # nowchanged

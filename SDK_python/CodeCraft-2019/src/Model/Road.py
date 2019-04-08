@@ -43,9 +43,6 @@ class Road():
                 if isGo:
                     goneCar.update({car.id:car})
                     self.InitCar[i].remove(car)
-
-
-
         return goneCar
 
     def getFirstToGoCar(self,cross,carPool):
