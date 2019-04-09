@@ -18,7 +18,7 @@ def judge(carPool,roadPool,crossPool):
     createInitCarList(carPool, roadPool)
 
     while True:
-        stamptime+=1
+
         for car in carOnRoad:
             carOnRoad[car].isReadyToGo=True
         driveJustCurrentRoad(carPool,roadPool,crossPool)#道路内车辆标定与驱动
@@ -31,7 +31,7 @@ def judge(carPool,roadPool,crossPool):
         print("len(carOnRoad):", len(carOnRoad))
         if (isFinish(countCar)):
             break
-
+        stamptime += 1
     print(calstat(carPool))
 
 def calstat(carPool):
@@ -48,7 +48,6 @@ def calstat(carPool):
             vipallScheduleTime+=car.arriveTime-car.plantTime
             allScheduleTimemax=max(car.arriveTime,allScheduleTimemax)
             allScheduleTimemin=min(car.plantTime,allScheduleTimemin)
-
         allScheduleTime+=car.arriveTime-car.plantTime
     return (vipallScheduleTime,allScheduleTimemax-allScheduleTimemin,allScheduleTime)
 def isFinish(countCar):
