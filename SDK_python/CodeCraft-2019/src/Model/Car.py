@@ -62,8 +62,9 @@ class Car(object):
                     self.carMove(self.nowChannel,index,road,crossPool,roadPool)
     def carMove(self,toChannel,toIndex,road,crossPool,roadPool):#road 是对象
         # print("car:",self.id,"wo zai zou ",self.nowRoad,">",road,">",toIndex)
-        if self.nowChannel is not "start":
+        if self.nowChannel != "start" :
             templist=list(self.nowChannel)
+            #print("========",self.nowChannel)
             fromIndex=templist.index(self.id)
             self.nowChannel[fromIndex]=0
         if toChannel[toIndex]!=0:
@@ -123,6 +124,7 @@ class Car(object):
             #print(" Car.CARINPORT", Car.CARINPORT)
             self.endState=True
             self.arriveTime=stamptime
+            #print(carOnRoad)
             carOnRoad.pop(self.id)
             templist=list(self.nowChannel)
             tempIndex=templist.index(self.id)
@@ -174,10 +176,6 @@ class Car(object):
                     return False
             self.carMove(channel,index,road,crossPool,roadPool)
             return True
-
-
-
-
 
     def addDirection(self, direction):
         a = direction[0] - direction[2]

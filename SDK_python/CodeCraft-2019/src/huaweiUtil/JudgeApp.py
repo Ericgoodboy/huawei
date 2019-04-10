@@ -1,6 +1,7 @@
 #判题器相关算法
-
+import pickle
 finishedCar =0
+#判题器整体算法
 def judge(carPool,roadPool,crossPool):
     tempCrossList=[crossPool[i] for i in crossPool]
     tempCrossList.sort(key=lambda c:c.id)
@@ -22,6 +23,7 @@ def judge(carPool,roadPool,crossPool):
         for car in carOnRoad:
             carOnRoad[car].isReadyToGo=True
         driveJustCurrentRoad(carPool,roadPool,crossPool)#道路内车辆标定与驱动
+        #deployee(stamptime,roadPool,len(carOnRoad))
         carOnRoad.update(driveCarInitList(carPool, roadPool, crossPool,stamptime,True))#优先车辆上路
         if driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool)!=True:
             return False
@@ -32,15 +34,80 @@ def judge(carPool,roadPool,crossPool):
         if (isFinish(countCar)):
             break
         stamptime += 1
+        # if stamptime%40==0:
+        #     dumpData(carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar)
+        #     break
     print(calstat(carPool))
+
+
+def rejudge(timeStamp):
+    fileName="time-"+str(timeStamp)+".pkl"
+    with open(fileName,"rb") as f:
+        carOnRoad,carPool,roadPool,stamptime,crossPool,finC =pickle.load(f)
+        reLinkMap(carOnRoad,carPool,roadPool,crossPool)
+        # print(len(pickle.load(f)))
+        #return carOnRoad,carPool,roadPool,stamptime,crossPool,finC
+    global finishedCar
+    finishedCar=finC
+    countCar=len(carPool)
+    stamptime=stamptime
+    # toGoCarPool={}
+    #
+    # createInitCarList(carPool, roadPool)
+
+    while True:
+
+        for car in carOnRoad:
+            carOnRoad[car].isReadyToGo=True
+        driveJustCurrentRoad(carPool,roadPool,crossPool)#道路内车辆标定与驱动
+        #deployee(stamptime,roadPool,len(carOnRoad))
+        carOnRoad.update(driveCarInitList(carPool, roadPool, crossPool,stamptime,True))#优先车辆上路
+        if driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool)!=True:
+            return False
+        carOnRoad.update(driveCarInitList(carPool,roadPool, crossPool,stamptime,False))  # 所有车辆车辆上路
+        print(len(carOnRoad))
+        print(stamptime)
+        print("len(carOnRoad):", len(carOnRoad))
+        if (isFinish(countCar)):
+            break
+        stamptime += 1
+        # if stamptime%40==0:
+        #     dumpData(carOnRoad,carPool,roadPool,stamptime,crossPool)
+        #     break
+    print(calstat(carPool))
+def reLinkMap(carOnRoad,carPool,roadPool,crossPool):
+    for carId in carOnRoad:
+        carOnRoad[carId] = carPool[carId]
+        carOnRoad[carId].nowRoad = roadPool[carOnRoad[carId].nowRoad.id]
+        for direction in carOnRoad[carId].nowRoad.directions:
+            for channel in direction:
+                if (carOnRoad[carId].nowChannel==channel).all():
+                    carOnRoad[carId].nowChannel = channel
+
+def dumpData(carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar):
+    fileName="time-"+str(stamptime)+".pkl"
+    print(fileName)
+    import time
+    time_st=time.time()
+
+    with open(fileName,"wb") as f:
+        pickle.dump((carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar),f)
+    print(time.time()-time_st)
+def deployee(stamptime,roadPool,l):
+    todo=2000-l
+    if todo<=0:
+        return
+    leng=len(roadPool)
+    for roadId in roadPool:
+        road=roadPool[roadId]
+        todo-=road.depoloyeeCar(stamptime,todo/leng)
+        leng-=1
 
 def calstat(carPool):
     vipallScheduleTime=0
     allScheduleTimemax=0
     allScheduleTimemin= 200
     allScheduleTime = 0
-
-
     priPool = [carPool[car] for car in carPool]
 
     for car in priPool:
@@ -59,10 +126,7 @@ def createInitCarList(carPool,roadPool):
     for carId in carPool:
         car=carPool[carId]
         startRoad= roadPool[car.path[0]]
-        if startRoad.fromCrossId == car.fromCrossId:
-            startRoad.InitCar[0].append(car)
-        else:
-            startRoad.InitCar[1].append(car)
+        startRoad.addInitCar(car)
     for roadId in roadPool:
         road=roadPool[roadId]
         road.InitCar[0].sort(key=lambda car:(-car.priority,car.bestStartTime,car.id))
@@ -121,8 +185,20 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
                     continue
                 road = roadPool[r]
                 car = road.getFirstToGoCar(crossPool[cross],carPool)
+                carIndex = crossPool[cross].allRoad.index(r)
+                neighborRoad=[]
+                #产生冲突队列
+                for i in range(3):
+                    roadId = crossPool[cross].allRoad[carIndex-i-1]
+
+                    if roadId !=-1:
+                        nebroad = roadPool[roadId]
+                        neighborRoad.append(nebroad.getFirstToGoCar(crossPool[cross],carPool))
+                    else:
+                        neighborRoad.append(False)
+                    pass
                 while car != False:
-                    if conflict(cross, car , road,carOnRoad,crossPool,roadPool,carPool):
+                    if conflict(neighborRoad,cross, car , road,carOnRoad,crossPool,roadPool,carPool):
                         break
                     isGo, isGoToPort=moveToNextRoad(stamptime,car,carOnRoad,cross,crossPool,roadPool)
                     if isGo:
@@ -138,19 +214,20 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
             allCarInEndState = True
         elif tuple(nowProcess)==tuple(lastProcess):
             roadsss = []
-            print("*********************************")
-            for i in nowProcess:
-                print(carOnRoad[i].nowRoad)
-                if carOnRoad[i].nowRoad not in roadsss:
-                    roadsss.append(carOnRoad[i].nowRoad)
-            print("*********************************")
-            for r in roadsss:
-                print("----------", r.id, "----------------")
-                print(r)
-                print("r.speed:", r.speed)
-                print(r.directions)
-                print("--------------------------")
-            print("dead lock")
+            print(len(nowProcess))
+            # print("*********************************")
+            # for i in nowProcess:
+            #     print(carOnRoad[i].nowRoad)
+            #     if carOnRoad[i].nowRoad not in roadsss:
+            #         roadsss.append(carOnRoad[i].nowRoad)
+            # print("*********************************")
+            # for r in roadsss:
+            #     print("----------", r.id, "----------------")
+            #     print(r)
+            #     print("r.speed:", r.speed)
+            #     print(r.directions)
+            #     print("--------------------------")
+            # print("dead lock")
             return False
         lastProcess=nowProcess
 
@@ -162,91 +239,38 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
 
 def moveToNextRoad(stamptime,car,carOnRoad,cross,crossPool,roadPool):#done carOnRoad,cross,crossPool,roadPool
     return car.moveToNextRoad(stamptime,carOnRoad,cross,crossPool,roadPool)
-def conflict(cross,car,road,carOnRoad,crossPool,roadPool,carPool):#有问题-----------------
+def conflict(neighborRoad,cross,car,road,carOnRoad,crossPool,roadPool,carPool):#有问题-----------------
     cross = crossPool[cross]
     if car.togoNext ==0:#要比较
-        nowIndex = cross.allRoad.index(road.id)
-        road1Id = cross.allRoad[nowIndex - 1]
-        road2Id = cross.allRoad[nowIndex - 3]
-        hasRoad1 = True
-        if road1Id == -1:
-            hasRoad1 = False
-        else:
-            road1 = roadPool[road1Id]
-            car1 = road1.getFirstToGoCar(cross, carOnRoad)
-        hasRoad2 = True
-        if road2Id == -1:
-            hasRoad2 = False
-        else:
-            road2 = roadPool[road2Id]
-            car2 = road2.getFirstToGoCar(cross, carOnRoad)
-        if hasRoad1 and car1 != False and car1.togoNext == 1 and car1.priority > car.priority:
+        car1=neighborRoad[0]
+        car2=neighborRoad[2]
+        if car1 != False and car1.togoNext == 1 and car1.priority > car.priority:
             return True
-        if hasRoad2 and car2 != False and car2.togoNext == 3 and car2.priority > car.priority:
+        if car2 != False and car2.togoNext == 3 and car2.priority > car.priority:
             return True
         return False
     if car.togoNext == 2:
-        nowIndex = cross.allRoad.index(road.id)
-        road1Id = cross.allRoad[nowIndex - 1]
-        road2Id = cross.allRoad[nowIndex - 3]
-        hasRoad1 = True
-        if road1Id == -1:
-            hasRoad1 = False
-        else:
-            road1 = roadPool[road1Id]
-            car1 = road1.getFirstToGoCar(cross, carOnRoad)
-        hasRoad2 = True
-        if road2Id == -1:
-            hasRoad2 = False
-        else:
-            road2 = roadPool[road2Id]
-            car2 = road2.getFirstToGoCar(cross, carOnRoad)
-        if hasRoad1 and car1 != False and car1.togoNext == 1 and car1.priority > car.priority:
+        car1 = neighborRoad[0]
+        car2 = neighborRoad[2]
+        if car1 != False and car1.togoNext == 1 and car1.priority > car.priority:
             return True
-        if hasRoad2 and car2 != False and car2.togoNext == 3 and car2.priority > car.priority:
+        if car2 != False and car2.togoNext == 3 and car2.priority > car.priority:
             return True
         return False
     if car.togoNext==1:
-        nowIndex=cross.allRoad.index(road.id)
-        road1Id = cross.allRoad[nowIndex-2]
-        road2Id = cross.allRoad[nowIndex-3]
-        hasRoad1=True
-        if road1Id==-1:
-            hasRoad1=False
-        else:
-            road1 = roadPool[road1Id]
-            car1 = road1.getFirstToGoCar(cross, carOnRoad)
-        hasRoad2 = True
-        if road2Id == -1:
-            hasRoad2 = False
-        else:
-            road2 = roadPool[road2Id]
-            car2 = road2.getFirstToGoCar(cross, carOnRoad)# 这个记得改
-
-        if hasRoad1 and car1!=False and car1.togoNext==3 and car1.priority >= car.priority:
+        car1 = neighborRoad[1]
+        car2 = neighborRoad[2]
+        if  car1!=False and car1.togoNext==3 and car1.priority >= car.priority:
             return True
 
-        if (hasRoad2 and car2!=False) and (car2.togoNext == 0 or car2.togoNext == 2) and car2.priority >= car.priority:
+        if (car2!=False) and (car2.togoNext == 0 or car2.togoNext == 2) and car2.priority >= car.priority:
             return True
         return False
     if car.togoNext==3:
-        nowIndex = cross.allRoad.index(road.id)
-        road1Id = cross.allRoad[nowIndex - 2]
-        road2Id = cross.allRoad[nowIndex - 1]
-        hasRoad1=True
-        if road1Id == -1:
-            hasRoad1 = False
-        else:
-            road1 = roadPool[road1Id]
-            car1 = road1.getFirstToGoCar(cross, carOnRoad)
-        hasRoad2 = True
-        if road2Id == -1:
-            hasRoad2 = False
-        else:
-            road2 = roadPool[road2Id]
-            car2 = road2.getFirstToGoCar(cross, carOnRoad)
-        if hasRoad1 and car1 != False and car1.togoNext == 1 and car1.priority > car.priority:
+        car1 = neighborRoad[1]
+        car2 = neighborRoad[0]
+        if  car1 != False and car1.togoNext == 1 and car1.priority > car.priority:
             return True
-        if (hasRoad2 and car2 != False) and (car2.togoNext == 0 or car2.togoNext == 2) and car2.priority >= car.priority:
+        if ( car2 != False) and (car2.togoNext == 0 or car2.togoNext == 2) and car2.priority >= car.priority:
             return True
         return False

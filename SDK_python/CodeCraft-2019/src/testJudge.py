@@ -55,19 +55,22 @@ def loadCar(carPath,answer_path,preset_answer_path):
             carDic.pop(id)
     return presetCarPool,carDic
 
-
-car_path="../2-map-training-1/car.txt"
-cross_path="../2-map-training-1/cross.txt"
-road_path="../2-map-training-1/road.txt"
-answer_path="../2-map-training-1/answer.txt"
-presetAnswer_path="../2-map-training-1/presetAnswer.txt"
-# car_path="../2-training-training-2-answer/car.txt"
-# cross_path="../2-training-training-2-answer/cross.txt"
-# road_path="../2-training-training-2-answer/road.txt"
-# answer_path="../2-training-training-2-answer/answer.txt"
-# presetAnswer_path="../2-training-training-2-answer/presetAnswer.txt"
+#
+# car_path="../2-map-training-2/car.txt"
+# cross_path="../2-map-training-2/cross.txt"
+# road_path="../2-map-training-2/road.txt"
+# answer_path="../2-map-training-2/answer4.txt"
+# presetAnswer_path="../2-map-training-2/presetAnswer.txt"
+car_path="../2-training-training-2-answer/car.txt"
+cross_path="../2-training-training-2-answer/cross.txt"
+road_path="../2-training-training-2-answer/road.txt"
+answer_path="../2-training-training-2-answer/answer.txt"
+presetAnswer_path="../2-training-training-2-answer/presetAnswer.txt"
 crossPool, roadPool = loadMap(cross_path, road_path)
 presetCarPool, carPool = loadCar(car_path, answer_path,presetAnswer_path)
+print(len(presetCarPool))
 assert len(carPool)==0
 from huaweiUtil import JudgeApp
+#JudgeApp.rejudge(40)
+
 JudgeApp.judge(presetCarPool,roadPool,crossPool)
