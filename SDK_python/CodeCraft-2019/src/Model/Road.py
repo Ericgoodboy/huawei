@@ -5,6 +5,7 @@ class Road():
     TYPE="Road"
     def __init__(self,id,length,speed,channel,fromCrossId,toCrossId,isDuplex):
         self.id=id
+        self.maxCar=length*channel
         self.length=length
         self.speed=speed
         self.fromCrossId=fromCrossId
@@ -12,6 +13,8 @@ class Road():
         self.toCrossId=toCrossId
         self.isDuplex=isDuplex
         self.arg=0
+        self.roadOut = [0, 0]
+        self.roadIn = [0, 0]
         self.deployeeArg=0.1
         self.maxCarOnroad=2000
         self.waitList = [[], []]
@@ -26,76 +29,66 @@ class Road():
     #     if self.isDuplex==1:
     #         self.InitCar[1].extend(self.waitList[1])
     #         self.InitCar[1].sort(key=lambda car:(-car.priority,car.bestStartTime,car.id))
-    def depoloyeeCar(self,timestamp,l)->int:
-        added=0
-        if self.isDuplex==1:
-            l1=math.ceil(l/2)
-            if l1<=len(self.waitList[0]):
-                added+=l1
-                temp=self.waitList[0][0:l1]
-                self.waitList[0]=self.waitList[0][l1:]
-                for t in temp:
-                    t.bestStartTime=timestamp
-                self.InitCar[0].extend(temp)
-            else:
-                temp=self.waitList[0]
-                self.waitList[0] = []
-                added+=len(temp)
-                for t in temp:
-                    t.bestStartTime = timestamp
-                self.InitCar[0].extend(temp)
-            if l1<=len(self.waitList[1]):
-                added+=l1
-                temp=self.waitList[1][0:l1]
-                self.waitList[1]=self.waitList[1][l1:]
-                for t in temp:
-                    t.bestStartTime=timestamp
-                self.InitCar[1].extend(temp)
-            else:
-                temp=self.waitList[1]
-                added+=len(temp)
-                self.waitList[1] = []
-                for t in temp:
-                    t.bestStartTime = timestamp
-                self.InitCar[1].extend(temp)
-            self.InitCar[1].sort(key=lambda car: (-car.priority, car.bestStartTime, car.id))
-            self.InitCar[0].sort(key=lambda car: (-car.priority, car.bestStartTime, car.id))
-        else:
-            l1=math.ceil(l)
-            if l1 <= len(self.waitList[0]):
-                added += l1
-                temp = self.waitList[0][0:l1]
-                self.waitList[0] = self.waitList[0][l1:]
-                for t in temp:
-                    t.bestStartTime = timestamp
-                self.InitCar[0].extend(temp)
-            else:
-                temp = self.waitList[0]
-                self.waitList[0] = []
-                added += len(temp)
-                for t in temp:
-                    t.bestStartTime = timestamp
-                self.InitCar[0].extend(temp)
-                self.InitCar[0].sort(key=lambda car: (-car.priority, car.bestStartTime, car.id))
+    def deployee(self,timestamp)->int:
+        added = 0
+        i = 0
+        kIn=1
+        kOut=0.4
+        maxpresure=5000
+        if timestamp<800:
+            kIn = 1
+            kOut = 0.4
+        for direction in self.directions:
+            if len(direction)<2:
+                if timestamp<800:
+                    return 0
+            countnowCar=len(direction.nonzero()[0])
+            # if countnowCar>self.maxCar*0.5:
+            #     print(direction)
+
+            toOutCar = self.roadOut[i]
+            toInCar = self.roadIn[i]
+            waitCar =len([car for car in self.InitCar[i] if car.bestStartTime <= timestamp])
+            if timestamp<30:
+                return 0
+            toOnRoad = self.maxCar*self.deployeeArg-countnowCar + toOutCar*kOut -toInCar*kIn-waitCar
+            if toOnRoad>0:
+                ina=int(toOnRoad)
+                if len(self.waitList[i])>=ina:
+                    temp=self.waitList[i][0:ina]
+                    for c in temp:
+                        c.bestStartTime = max(timestamp,c.plantTime)
+                    self.InitCar[i].extend(temp)
+                    self.waitList[i] = self.waitList[i][ina:]
+                    added+=ina
+                else:
+                    added += len(self.waitList[i])
+                    temp = self.waitList[i]
+                    for c in temp:
+                        c.bestStartTime = max(timestamp,c.plantTime)
+                    self.InitCar[i].extend(temp)
+                    self.waitList[i]=[]
+                self.InitCar[i].sort(key=lambda car:(-car.priority,car.bestStartTime,car.id))
+            i+=1
         return added
 
 
 
     def addInitCar(self,car):
-        if car.fromCrossId == self.fromCrossId:
-            self.InitCar[0].append(car)
-        else:
-            self.InitCar[1].append(car)
-        # if car.preset==1:
-        #     if car.fromCrossId==self.fromCrossId:
-        #         self.InitCar[0].append(car)
-        #     else:
-        #         self.InitCar[1].append(car)
+        # if car.fromCrossId == self.fromCrossId:
+        #     self.InitCar[0].append(car)
         # else:
-        #     if car.fromCrossId==self.fromCrossId:
-        #         self.waitList[0].append(car)
-        #     else:
-        #         self.waitList[1].append(car)
+        #     self.InitCar[1].append(car)
+        if car.preset==1:
+            if car.fromCrossId==self.fromCrossId:
+                self.InitCar[0].append(car)
+            else:
+                self.InitCar[1].append(car)
+        else:
+            if car.fromCrossId==self.fromCrossId:
+                self.waitList[0].append(car)
+            else:
+                self.waitList[1].append(car)
 
 
     def runCarInitList(self,carPool,roadPool,crossPool,nowTime,priority,crossId=-1):

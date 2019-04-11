@@ -22,21 +22,20 @@ def judge(carPool,roadPool,crossPool):
 
         for car in carOnRoad:
             carOnRoad[car].isReadyToGo=True
+        added = deployee(stamptime, roadPool, carPool, crossPool,len(carOnRoad))
         driveJustCurrentRoad(carPool,roadPool,crossPool)#道路内车辆标定与驱动
         #deployee(stamptime,roadPool,len(carOnRoad))
         carOnRoad.update(driveCarInitList(carPool, roadPool, crossPool,stamptime,True))#优先车辆上路
         if driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool)!=True:
             return False
         carOnRoad.update(driveCarInitList(carPool,roadPool, crossPool,stamptime,False))  # 所有车辆车辆上路
-        print(len(carOnRoad))
-        print(stamptime)
-        print("len(carOnRoad):", len(carOnRoad))
+        print("time:%6s len(carOnRoad):%6s countCar:%6s finishedCar:%6s added:%4s" % (stamptime, len(carOnRoad), countCar,finishedCar,added))
         if (isFinish(countCar)):
             break
         stamptime += 1
-        # if stamptime%40==0:
-        #     dumpData(carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar)
-        #     break
+        if stamptime%10==0:
+            dumpData(carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar)
+
     print(calstat(carPool))
 
 
@@ -59,15 +58,15 @@ def rejudge(timeStamp):
 
         for car in carOnRoad:
             carOnRoad[car].isReadyToGo=True
+        deployee(stamptime, roadPool, carPool, crossPool)
         driveJustCurrentRoad(carPool,roadPool,crossPool)#道路内车辆标定与驱动
         #deployee(stamptime,roadPool,len(carOnRoad))
         carOnRoad.update(driveCarInitList(carPool, roadPool, crossPool,stamptime,True))#优先车辆上路
         if driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool)!=True:
             return False
         carOnRoad.update(driveCarInitList(carPool,roadPool, crossPool,stamptime,False))  # 所有车辆车辆上路
-        print(len(carOnRoad))
-        print(stamptime)
-        print("len(carOnRoad):", len(carOnRoad))
+
+        print("time: %6s len(carOnRoad): %6s finishedCar: %6s"%(stamptime,len(carOnRoad),finishedCar))
         if (isFinish(countCar)):
             break
         stamptime += 1
@@ -89,19 +88,68 @@ def dumpData(carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar):
     print(fileName)
     import time
     time_st=time.time()
-
     with open(fileName,"wb") as f:
         pickle.dump((carOnRoad,carPool,roadPool,stamptime,crossPool,finishedCar),f)
     print(time.time()-time_st)
-def deployee(stamptime,roadPool,l):
-    todo=2000-l
-    if todo<=0:
-        return
-    leng=len(roadPool)
+def deployee(stamptime,roadPool,carPool,crossPool,l):
+    added = 0
+    if l > 4000:
+        return 0
+    for crossId in crossPool:
+        cross = crossPool[crossId]
+        backet = {roadId:0 for roadId in cross.allRoad if roadId!=-1}
+        for roadId in cross.allRoad:
+            if roadId == -1:
+                continue
+            roadOut=0
+            road = roadPool[roadId]
+            k = 0
+            if road.isDuplex == 0 and crossId!=road.toCrossId:
+                continue
+
+            elif crossId == road.toCrossId:
+                direction = road.directions[0]
+                k = 0
+            else:
+                direction = road.directions[1]
+                k = 1
+            road.roadOut[k] = 0
+            #row = len(direction[0])-1
+            for row in direction:
+                for col in row:
+                    if col != 0:
+                        car = carPool[col]
+                        if car.canGoOnRoad==False:
+                            road.roadOut[k]+=1
+                            roadIndex = car.path.index(roadId)
+                            if len(car.path) -1 == roadIndex:
+                                pass
+                            else:
+                                nextRoad=car.path[roadIndex+1]
+                                backet[nextRoad] += 1
+        for roadId in cross.allRoad:
+            if roadId == -1:
+                continue
+            roadOut=0
+            road = roadPool[roadId]
+            k = 0
+            if road.isDuplex == 0 and crossId!=road.fromCrossId:
+                continue
+            elif crossId == road.fromCrossId:
+                direction = road.directions[0]
+                k = 1
+            else:
+                direction = road.directions[1]
+                k = 0
+            road.roadIn[k]=backet[roadId]
+
     for roadId in roadPool:
-        road=roadPool[roadId]
-        todo-=road.depoloyeeCar(stamptime,todo/leng)
-        leng-=1
+        road = roadPool[roadId]
+        added+=road.deployee(stamptime)
+
+    return added
+
+
 
 def calstat(carPool):
     vipallScheduleTime=0
@@ -118,7 +166,6 @@ def calstat(carPool):
         allScheduleTime+=car.arriveTime-car.plantTime
     return (vipallScheduleTime,allScheduleTimemax-allScheduleTimemin,allScheduleTime)
 def isFinish(countCar):
-    print(countCar,finishedCar)
     if finishedCar== countCar:
         return True
     return False
@@ -131,6 +178,8 @@ def createInitCarList(carPool,roadPool):
         road=roadPool[roadId]
         road.InitCar[0].sort(key=lambda car:(-car.priority,car.bestStartTime,car.id))
         road.InitCar[1].sort(key=lambda car: (-car.priority, car.bestStartTime, car.id))
+        road.waitList[0].sort(key=lambda car:(-car.priority,car.plantTime,-car.speed,car.id))
+        road.waitList[1].sort(key=lambda car: (-car.priority,car.plantTime, -car.speed, car.id))
 
 def driveJustCurrentRoad(carPool,roadPool,crossPool):
     for road in roadPool:
@@ -188,6 +237,8 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
                 carIndex = crossPool[cross].allRoad.index(r)
                 neighborRoad=[]
                 #产生冲突队列
+                if car==False:
+                    continue
                 for i in range(3):
                     roadId = crossPool[cross].allRoad[carIndex-i-1]
 
@@ -215,6 +266,12 @@ def driveCarInWaitState(carOnRoad,carPool,roadPool,stamptime,crossPool):
         elif tuple(nowProcess)==tuple(lastProcess):
             roadsss = []
             print(len(nowProcess))
+            minstart=10000
+            for carId in nowProcess:
+                car=carPool[carId]
+                print(carId,car.bestStartTime,car.priority,car.preset)
+                minstart=min(minstart,car.bestStartTime)
+            print(minstart)
             # print("*********************************")
             # for i in nowProcess:
             #     print(carOnRoad[i].nowRoad)
